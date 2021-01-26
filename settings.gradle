@@ -1,0 +1,2 @@
+rootProject.name = "Facebook Photo and Animation"
+include ':app'

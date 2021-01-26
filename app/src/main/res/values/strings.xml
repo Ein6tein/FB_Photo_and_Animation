@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Facebook Photo and Animation</string>
+
+    <string name="facebook_app_id">2786657548318381</string>
+    <string name="fb_login_protocol_scheme">fb2786657548318381</string>
+
+    <string name="login_with_facebook">Login with Facebook</string>
+</resources>
