@@ -41,4 +41,17 @@
         tools:ignore="ContentDescription"
         />
 
+    <Button
+        android:id="@+id/btn_change_pic"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:paddingBottom="16dp"
+        android:paddingTop="16dp"
+        android:text="@string/change_photo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

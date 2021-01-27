@@ -1,7 +1,7 @@
 package com.chernishenko.facebookphotoandanimation
 
-import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.chernishenko.facebookphotoandanimation.databinding.ActivityMainBinding
@@ -10,8 +10,6 @@ import com.chernishenko.facebookphotoandanimation.fragment.MainFragment
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModel
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModelFactory
 import com.facebook.AccessToken
-import com.facebook.CallbackManager
-import com.facebook.login.LoginResult
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,6 +27,9 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
+        viewModel.loading = { isVisible ->
+            binding.progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+        }
         val currentAccessToken = AccessToken.getCurrentAccessToken()
         if (currentAccessToken != null) {
             viewModel.retrieveImageUrl(currentAccessToken) {

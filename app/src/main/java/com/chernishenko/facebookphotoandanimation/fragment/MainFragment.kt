@@ -21,6 +21,7 @@ import com.chernishenko.facebookphotoandanimation.R
 import com.chernishenko.facebookphotoandanimation.databinding.FragmentMainBinding
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModel
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModelFactory
+import com.facebook.AccessToken
 
 class MainFragment : Fragment() {
 
@@ -48,6 +49,20 @@ class MainFragment : Fragment() {
     override fun onStart() {
         super.onStart()
 
+        setupPic()
+        binding.btnChangePic.setOnClickListener {
+            viewModel.retrieveUserAlbums(AccessToken.getCurrentAccessToken()) {
+                activity
+                    ?.supportFragmentManager
+                    ?.beginTransaction()
+                    ?.add(R.id.fl_fragment_container, AlbumSelectionFragment(), AlbumSelectionFragment.TAG)
+                    ?.addToBackStack(AlbumSelectionFragment.TAG)
+                    ?.commit()
+            }
+        }
+    }
+
+    private fun setupPic() {
         viewModel.url?.let {
             Glide
                 .with(this)
@@ -56,6 +71,7 @@ class MainFragment : Fragment() {
                 .addListener(object : RequestListener<Drawable> {
 
                     override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                        viewModel.loading.invoke(false)
                         animatePulse(0)
                         return false
                     }
@@ -64,7 +80,6 @@ class MainFragment : Fragment() {
                         Log.e("Something", "wrong", e)
                         return false
                     }
-
                 })
                 .into(binding.ivProfilePic)
         }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="FacebookLoginButtonStyle">
+        <item name="android:paddingBottom">12dp</item>
+        <item name="android:paddingTop">12dp</item>
+        <item name="android:text">@string/login_with_facebook</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+</resources>

@@ -37,7 +37,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.loginButton.setPermissions("public_profile")
+        binding.loginButton.setPermissions("public_profile", "user_photos")
         binding.loginButton.fragment = this
         binding.loginButton.registerCallback(callbackManager,
             object : FacebookCallback<LoginResult> {

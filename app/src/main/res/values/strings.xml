@@ -5,4 +5,7 @@
     <string name="fb_login_protocol_scheme">fb2786657548318381</string>
 
     <string name="login_with_facebook">Login with Facebook</string>
+    <string name="change_photo">Change Photo</string>
+
+    <string name="count_d">Count: %d</string>
 </resources>

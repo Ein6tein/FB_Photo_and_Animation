@@ -13,4 +13,6 @@
 
     <color name="green_700">#FF388E3C</color>
     <color name="yellow_700">#FFFBC02D</color>
+
+    <color name="semi_transparent">#4000</color>
 </resources>
