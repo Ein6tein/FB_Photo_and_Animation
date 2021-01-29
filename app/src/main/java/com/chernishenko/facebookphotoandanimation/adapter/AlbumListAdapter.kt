@@ -7,8 +7,11 @@ import com.chernishenko.facebookphotoandanimation.R
 import com.chernishenko.facebookphotoandanimation.databinding.RowAlbumBinding
 import com.chernishenko.facebookphotoandanimation.model.Album
 
+typealias OnClick = (Long) -> Unit
+
 class AlbumListAdapter(
-    private val list: List<Album>
+    private val list: List<Album>,
+    private val onClickListener: OnClick
 ) : RecyclerView.Adapter<AlbumListAdapter.ItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder =
@@ -17,6 +20,7 @@ class AlbumListAdapter(
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         holder.binding.tvAlbumName.text = list[position].name
         holder.binding.tvPhotosCount.text = holder.binding.root.context.getString(R.string.count_d, list[position].count)
+        holder.binding.root.setOnClickListener { onClickListener.invoke(list[position].id) }
     }
 
     override fun getItemCount(): Int = list.size

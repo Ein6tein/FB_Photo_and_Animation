@@ -11,16 +11,16 @@ import android.view.ViewGroup
 import android.view.animation.AccelerateInterpolator
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.bumptech.glide.Glide
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.commit
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.chernishenko.facebookphotoandanimation.R
 import com.chernishenko.facebookphotoandanimation.databinding.FragmentMainBinding
+import com.chernishenko.facebookphotoandanimation.module.GlideApp
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModel
-import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModelFactory
 import com.facebook.AccessToken
 
 class MainFragment : Fragment() {
@@ -36,8 +36,8 @@ class MainFragment : Fragment() {
         )
     }
 
-    private val factory by lazy { MainViewModelFactory() }
-    private val viewModel by lazy { ViewModelProvider(requireActivity(), factory).get(MainViewModel::class.java) }
+    private val viewModel by activityViewModels<MainViewModel>()
+    private val handler = Handler(Looper.getMainLooper())
 
     private lateinit var binding: FragmentMainBinding
 
@@ -49,41 +49,42 @@ class MainFragment : Fragment() {
     override fun onStart() {
         super.onStart()
 
-        setupPic()
+        setupViewModel()
         binding.btnChangePic.setOnClickListener {
             viewModel.retrieveUserAlbums(AccessToken.getCurrentAccessToken()) {
-                activity
-                    ?.supportFragmentManager
-                    ?.beginTransaction()
-                    ?.add(R.id.fl_fragment_container, AlbumSelectionFragment(), AlbumSelectionFragment.TAG)
-                    ?.addToBackStack(AlbumSelectionFragment.TAG)
-                    ?.commit()
+                parentFragmentManager.commit {
+                    addToBackStack(AlbumSelectionFragment.TAG)
+                    replace(R.id.fl_fragment_container, AlbumSelectionFragment(), AlbumSelectionFragment.TAG)
+                }
             }
         }
     }
 
-    private fun setupPic() {
-        viewModel.url?.let {
-            Glide
-                .with(this)
-                .load(it)
-                .circleCrop()
-                .addListener(object : RequestListener<Drawable> {
-
-                    override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                        viewModel.loading.invoke(false)
-                        animatePulse(0)
-                        return false
-                    }
-
-                    override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-                        Log.e("Something", "wrong", e)
-                        return false
-                    }
-                })
-                .into(binding.ivProfilePic)
+    private fun setupViewModel() {
+        viewModel.url.observe(viewLifecycleOwner) {
+            loadPhoto(it)
         }
     }
+
+    private fun loadPhoto(photo: String) =
+        GlideApp
+            .with(this)
+            .load(photo)
+            .circleCrop()
+            .addListener(object : RequestListener<Drawable> {
+
+                override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                    viewModel.loading.invoke(false)
+                    animatePulse(0)
+                    return false
+                }
+
+                override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                    Log.e("Something", "wrong", e)
+                    return false
+                }
+            })
+            .into(binding.ivProfilePic)
 
     private fun animatePulse(position: Int) {
         when (position % 2) {
@@ -101,8 +102,8 @@ class MainFragment : Fragment() {
         view
             .animate()
             .setDuration(1500)
-            .scaleX(4f)
-            .scaleY(4f)
+            .scaleX(8f)
+            .scaleY(8f)
             .alpha(0f)
             .setInterpolator(AccelerateInterpolator(.25f))
             .withEndAction {
@@ -110,8 +111,11 @@ class MainFragment : Fragment() {
                 view.scaleY = 1f
                 view.alpha = 1f
             }
-        Handler(Looper.getMainLooper()).postDelayed({
-            animatePulse(if ((position + 1) == 4) 0 else position + 1)
-        }, 1000)
+
+        if (isVisible) {
+            handler.postDelayed({
+                animatePulse(if ((position + 1) == 4) 0 else position + 1)
+            }, 1000)
+        }
     }
 }

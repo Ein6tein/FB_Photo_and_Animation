@@ -2,19 +2,18 @@ package com.chernishenko.facebookphotoandanimation
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.commit
 import com.chernishenko.facebookphotoandanimation.databinding.ActivityMainBinding
 import com.chernishenko.facebookphotoandanimation.fragment.LoginFragment
 import com.chernishenko.facebookphotoandanimation.fragment.MainFragment
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModel
-import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModelFactory
 import com.facebook.AccessToken
 
 class MainActivity : AppCompatActivity() {
 
-    private val factory by lazy { MainViewModelFactory() }
-    private val viewModel by lazy { ViewModelProvider(this, factory).get(MainViewModel::class.java) }
+    private val viewModel by viewModels<MainViewModel>()
 
     private lateinit var binding: ActivityMainBinding
 
@@ -33,16 +32,14 @@ class MainActivity : AppCompatActivity() {
         val currentAccessToken = AccessToken.getCurrentAccessToken()
         if (currentAccessToken != null) {
             viewModel.retrieveImageUrl(currentAccessToken) {
-                supportFragmentManager
-                    .beginTransaction()
-                    .replace(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
-                    .commit()
+                supportFragmentManager.commit {
+                    add(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
+                }
             }
         } else {
-            supportFragmentManager
-                .beginTransaction()
-                .add(R.id.fl_fragment_container, LoginFragment(), LoginFragment.TAG)
-                .commit()
+            supportFragmentManager.commit {
+                add(R.id.fl_fragment_container, LoginFragment(), LoginFragment.TAG)
+            }
         }
     }
 }

@@ -7,15 +7,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.commit
 import com.chernishenko.facebookphotoandanimation.R
 import com.chernishenko.facebookphotoandanimation.databinding.FragmentLoginBinding
 import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModel
-import com.chernishenko.facebookphotoandanimation.viewmodel.MainViewModelFactory
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
 import com.facebook.FacebookException
-import com.facebook.GraphRequest
 import com.facebook.login.LoginResult
 
 class LoginFragment : Fragment() {
@@ -24,8 +23,7 @@ class LoginFragment : Fragment() {
         const val TAG = "LoginFragment"
     }
 
-    private val factory by lazy { MainViewModelFactory() }
-    private val viewModel by lazy { ViewModelProvider(requireActivity(), factory).get(MainViewModel::class.java) }
+    private val viewModel by activityViewModels<MainViewModel>()
     private val callbackManager: CallbackManager by lazy { CallbackManager.Factory.create() }
 
     private lateinit var binding: FragmentLoginBinding
@@ -45,11 +43,9 @@ class LoginFragment : Fragment() {
                 override fun onSuccess(result: LoginResult?) {
                     result?.let {
                         viewModel.retrieveImageUrl(it.accessToken) {
-                            activity
-                                ?.supportFragmentManager
-                                ?.beginTransaction()
-                                ?.replace(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
-                                ?.commit()
+                            parentFragmentManager.commit {
+                                replace(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
+                            }
                         }
                     }
                 }

@@ -1,8 +1,9 @@
 package com.chernishenko.facebookphotoandanimation.viewmodel
 
+import android.net.Uri
 import android.os.Bundle
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import com.chernishenko.facebookphotoandanimation.model.Album
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
@@ -17,7 +18,9 @@ class MainViewModel : ViewModel() {
         private val ALBUM_TYPES = listOf("normal", "profile")
     }
 
-    var url: String? = null
+    val photos = mutableListOf<String>()
+
+    val url = MutableLiveData<String>()
 
     private var _albums = mutableListOf<Album>()
     val albums: List<Album>
@@ -32,9 +35,11 @@ class MainViewModel : ViewModel() {
                 .optJSONObject("picture")
                 ?.optJSONObject("data")
                 ?.optString("url")
-                ?.let { url ->
-                    if (url.isNotBlank()) { this.url = url }
-                    onRequestComplete.invoke()
+                ?.let {
+                    if (it.isNotBlank()) {
+                        url.postValue(it)
+                        onRequestComplete.invoke()
+                    }
                 } ?: loading.invoke(false)
         }
         val parameters = Bundle()
@@ -45,10 +50,15 @@ class MainViewModel : ViewModel() {
 
     fun retrieveUserAlbums(accessToken: AccessToken, onRequestComplete: OnRequestComplete) {
         loading.invoke(true)
-        val request = GraphRequest.newGraphPathRequest(accessToken, "/${accessToken.userId}/albums") { response ->
+        _albums.clear()
+        val path = "/${accessToken.userId}/albums"
+        requestAlbums(accessToken, path, onRequestComplete = onRequestComplete)
+    }
+
+    private fun requestAlbums(accessToken: AccessToken, path: String, after: String? = null, onRequestComplete: OnRequestComplete) {
+        val request = GraphRequest.newGraphPathRequest(accessToken, path) { response ->
             response.jsonObject?.let {
                 it.optJSONArray("data")?.let { data ->
-                    _albums.clear()
                     for (i in 0 until data.length()) {
                         val obj = data[i] as JSONObject
                         val album = Album(
@@ -66,12 +76,53 @@ class MainViewModel : ViewModel() {
                         .filter { album -> ALBUM_TYPES.contains(album.type) }
                         .toMutableList()
                         .moveToFirst(_albums.find { album -> album.type == "profile" })
-                    onRequestComplete.invoke()
+
+                    val next = (it.opt("paging") as JSONObject).optString("next")
+                    if (next.isNotEmpty()) {
+                        requestAlbums(accessToken, path, Uri.parse(next).getQueryParameter("after"), onRequestComplete)
+                    } else {
+                        onRequestComplete.invoke()
+                    }
+
                 } ?: loading.invoke(false)
-            }
+            } ?: loading.invoke(false)
         }
         val parameters = Bundle()
         parameters.putString("fields", "id,count,description,name,type")
+        after?.let { parameters.putString("after", after) }
+        request.parameters = parameters
+        request.executeAsync()
+    }
+
+    fun retrievePhotos(albumId: Long, accessToken: AccessToken, onRequestComplete: OnRequestComplete) {
+        loading.invoke(true)
+        photos.clear()
+        val link = "/$albumId/photos"
+        requestPhotos(accessToken, link, onRequestComplete = onRequestComplete)
+    }
+
+    private fun requestPhotos(accessToken: AccessToken, path: String, after: String? = null, onRequestComplete: OnRequestComplete) {
+        val request = GraphRequest.newGraphPathRequest(accessToken, path) { response ->
+            response.jsonObject?.let {
+                it.optJSONArray("data")?.let { array ->
+                    for (i in 0 until array.length()) {
+                        val images = (array[i] as JSONObject).optJSONArray("images")
+                        images?.let {
+                            photos.add((images[0] as JSONObject).opt("source") as String)
+                        }
+                    }
+                    val next = (it.opt("paging") as JSONObject).optString("next")
+                    if (next.isNotEmpty()) {
+                        requestPhotos(accessToken, path, Uri.parse(next).getQueryParameter("after"), onRequestComplete)
+                    } else {
+                        onRequestComplete.invoke()
+                    }
+                } ?: loading.invoke(false)
+            } ?: loading.invoke(false)
+        }
+        val parameters = Bundle()
+        parameters.putString("fields", "images")
+        after?.let { parameters.putString("after", after) }
         request.parameters = parameters
         request.executeAsync()
     }
@@ -83,15 +134,4 @@ private fun MutableList<Album>.moveToFirst(element: Album?): MutableList<Album> 
         add(0, element)
     }
     return this
-}
-
-class MainViewModelFactory : ViewModelProvider.Factory {
-
-    override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return MainViewModel() as T
-        }
-        throw IllegalArgumentException("Unknown class name")
-    }
 }
