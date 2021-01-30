@@ -42,11 +42,10 @@ class LoginFragment : Fragment() {
 
                 override fun onSuccess(result: LoginResult?) {
                     result?.let {
-                        viewModel.retrieveImageUrl(it.accessToken) {
-                            parentFragmentManager.commit {
-                                replace(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
-                            }
+                        parentFragmentManager.commit {
+                            replace(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
                         }
+                        viewModel.retrieveImageUrl()
                     }
                 }
 

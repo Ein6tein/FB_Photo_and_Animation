@@ -38,6 +38,8 @@ class PhotosGridAdapter(
     inner class ItemViewHolder(val binding: CellPhotoBinding) : RecyclerView.ViewHolder(binding.root)
 
     override fun getPreloadItems(position: Int): MutableList<String> {
+        if (photos.isEmpty()) return mutableListOf()
+
         return photos.subList(position, if (position + 8 < photos.size) position + 8 else photos.size).toMutableList()
     }
 

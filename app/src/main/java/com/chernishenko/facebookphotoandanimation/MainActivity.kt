@@ -31,11 +31,10 @@ class MainActivity : AppCompatActivity() {
         }
         val currentAccessToken = AccessToken.getCurrentAccessToken()
         if (currentAccessToken != null) {
-            viewModel.retrieveImageUrl(currentAccessToken) {
-                supportFragmentManager.commit {
-                    add(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
-                }
+            supportFragmentManager.commit {
+                add(R.id.fl_fragment_container, MainFragment(), MainFragment.TAG)
             }
+            viewModel.retrieveImageUrl()
         } else {
             supportFragmentManager.commit {
                 add(R.id.fl_fragment_container, LoginFragment(), LoginFragment.TAG)

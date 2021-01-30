@@ -51,6 +51,7 @@ dependencies {
         transitive = false
     }
     implementation 'com.google.android.material:material:1.2.1'
+    implementation 'io.reactivex.rxjava3:rxkotlin:3.0.1'
     kapt "com.github.bumptech.glide:compiler:4.11.0"
     testImplementation 'junit:junit:4.13.1'
 

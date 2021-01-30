@@ -38,15 +38,14 @@ class AlbumSelectionFragment : Fragment() {
         binding.rvAlbums.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.VERTICAL).apply {
             setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
         })
-        binding.rvAlbums.adapter = AlbumListAdapter(viewModel.albums) {
-            viewModel.retrievePhotos(it, AccessToken.getCurrentAccessToken()) {
+        viewModel.albums.observe(viewLifecycleOwner) {
+            binding.rvAlbums.adapter = AlbumListAdapter(it) { albumId ->
                 parentFragmentManager.commit {
                     addToBackStack(PhotoSelectionFragment.TAG)
                     replace(R.id.fl_fragment_container, PhotoSelectionFragment(), PhotoSelectionFragment.TAG)
                 }
-                viewModel.loading.invoke(false)
+                viewModel.retrievePhotos(albumId)
             }
         }
-        viewModel.loading.invoke(false)
     }
 }

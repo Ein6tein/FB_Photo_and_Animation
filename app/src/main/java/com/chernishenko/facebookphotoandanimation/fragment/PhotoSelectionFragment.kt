@@ -48,7 +48,7 @@ class PhotoSelectionFragment : Fragment() {
         binding.rvPhotos.addItemDecoration(DividerItemDecoration(context, DividerItemDecoration.HORIZONTAL).apply {
             setDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.divider)!!)
         })
-        viewModel.photos.let {
+        viewModel.photos.observe(viewLifecycleOwner) {
             adapter = PhotosGridAdapter(requests, it) { photo ->
                 viewModel.url.postValue(photo)
                 parentFragmentManager.popBackStack()
@@ -59,7 +59,6 @@ class PhotoSelectionFragment : Fragment() {
             val sizeProvider = ViewPreloadSizeProvider<String>(adapter.createViewHolder(binding.rvPhotos, 0).binding.ivPhoto)
             preloader = RecyclerViewPreloader(requests, adapter, sizeProvider, 9)
             binding.rvPhotos.addOnScrollListener(preloader)
-            viewModel.loading.invoke(false)
         }
     }
 }

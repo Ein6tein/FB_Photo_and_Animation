@@ -46,17 +46,20 @@ class MainFragment : Fragment() {
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupViewModel()
+    }
+
     override fun onStart() {
         super.onStart()
 
-        setupViewModel()
         binding.btnChangePic.setOnClickListener {
-            viewModel.retrieveUserAlbums(AccessToken.getCurrentAccessToken()) {
-                parentFragmentManager.commit {
-                    addToBackStack(AlbumSelectionFragment.TAG)
-                    replace(R.id.fl_fragment_container, AlbumSelectionFragment(), AlbumSelectionFragment.TAG)
-                }
+            parentFragmentManager.commit {
+                addToBackStack(AlbumSelectionFragment.TAG)
+                replace(R.id.fl_fragment_container, AlbumSelectionFragment(), AlbumSelectionFragment.TAG)
             }
+            viewModel.retrieveUserAlbums()
         }
     }
 
